@@ -1,5 +1,8 @@
 const { Client, GatewayIntentBits, Partials } = require("discord.js");
 
+const messageDelete = require("./events/messageDelete");
+const messageUpdate = require("./events/messageUpdate");
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -14,9 +17,6 @@ const client = new Client({
   ]
 });
 
-// Events
-const messageDelete = require("./events/messageDelete");
-
 client.once("ready", () => {
   console.log("==================================");
   console.log(`${client.user.tag} is online.`);
@@ -25,5 +25,6 @@ client.once("ready", () => {
 });
 
 client.on("messageDelete", messageDelete);
+client.on("messageUpdate", messageUpdate);
 
 client.login(process.env.TOKEN);
