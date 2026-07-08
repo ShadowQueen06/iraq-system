@@ -1,5 +1,15 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, AuditLogEvent } = require("discord.js");
 const config = require("../config");
+
+async function getTimeoutExecutor(guild, memberId) {
+  try {
+    const logs = await guild.fetchAuditLogs({ limit: 5, type: AuditLogEvent.MemberUpdate });
+    const entry = logs.entries.find(e => e.target?.id === memberId && Date.now() - e.createdTimestamp < 5000);
+    return entry || null;
+  } catch {
+    return null;
+  }
+}
 
 module.exports = async (oldMember, newMember) => {
   if (newMember.user.bot) return;
@@ -23,9 +33,14 @@ module.exports = async (oldMember, newMember) => {
     await logChannel.send({ embeds: [embed] });
   }
 
-  if (!oldMember.communicationDisabledUntil && newMember.communicationDisabledUntil) {
+  const oldTimeout = oldMember.communicationDisabledUntilTimestamp;
+  const newTimeout = newMember.communicationDisabledUntilTimestamp;
+
+  if (!oldTimeout && newTimeout) {
     const logChannel = newMember.guild.channels.cache.get(config.channels.modLogs);
     if (!logChannel) return;
+
+    const entry = await getTimeoutExecutor(newMember.guild, newMember.id);
 
     const embed = new EmbedBuilder()
       .setColor(config.colors.yellow)
@@ -33,7 +48,8 @@ module.exports = async (oldMember, newMember) => {
       .setThumbnail(newMember.user.displayAvatarURL())
       .addFields(
         { name: "👤 العضو", value: `${newMember}`, inline: true },
-        { name: "ينتهي في", value: `<t:${Math.floor(newMember.communicationDisabledUntilTimestamp / 1000)}:R>` }
+        { name: "👮 بواسطة", value: entry?.executor ? `${entry.executor}` : "غير معروف", inline: true },
+        { name: "ينتهي في", value: `<t:${Math.floor(newTimeout / 1000)}:R>` }
       )
       .setTimestamp()
       .setFooter({ text: config.serverName });
@@ -41,16 +57,19 @@ module.exports = async (oldMember, newMember) => {
     await logChannel.send({ embeds: [embed] });
   }
 
-  if (oldMember.communicationDisabledUntil && !newMember.communicationDisabledUntil) {
+  if (oldTimeout && !newTimeout) {
     const logChannel = newMember.guild.channels.cache.get(config.channels.modLogs);
     if (!logChannel) return;
+
+    const entry = await getTimeoutExecutor(newMember.guild, newMember.id);
 
     const embed = new EmbedBuilder()
       .setColor(config.colors.green)
       .setTitle("⌛ تم إزالة Timeout")
       .setThumbnail(newMember.user.displayAvatarURL())
       .addFields(
-        { name: "👤 العضو", value: `${newMember}`, inline: true }
+        { name: "👤 العضو", value: `${newMember}`, inline: true },
+        { name: "👮 بواسطة", value: entry?.executor ? `${entry.executor}` : "غير معروف", inline: true }
       )
       .setTimestamp()
       .setFooter({ text: config.serverName });
