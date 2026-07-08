@@ -9,6 +9,7 @@ const guildBanAdd = require("./events/guildBanAdd");
 const guildBanRemove = require("./events/guildBanRemove");
 const guildMemberUpdate = require("./events/guildMemberUpdate");
 const moderationCommands = require("./events/moderationCommands");
+const interactionCreate = require("./events/interactionCreate");
 
 const client = new Client({
   intents: [
@@ -37,6 +38,7 @@ client.once("ready", () => {
 client.on("messageDelete", messageDelete);
 client.on("messageUpdate", messageUpdate);
 client.on("messageCreate", moderationCommands);
+client.on("interactionCreate", interactionCreate);
 client.on("voiceStateUpdate", voiceStateUpdate);
 client.on("guildMemberAdd", guildMemberAdd);
 client.on("guildMemberRemove", guildMemberRemove);
