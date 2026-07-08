@@ -14,10 +14,11 @@ module.exports = {
   },
 
   colors: {
-    success: "#57F287",
-    warning: "#FEE75C",
-    danger: "#ED4245",
-    info: "#5865F2",
+    green: "#57F287",
+    red: "#ED4245",
+    yellow: "#FEE75C",
+    blue: "#5865F2",
+    purple: "#9B59B6",
     gold: "#C8A24A"
   }
 };
