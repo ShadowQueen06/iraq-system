@@ -1,4 +1,8 @@
-const { Client, GatewayIntentBits, Partials } = require("discord.js");
+const {
+  Client,
+  GatewayIntentBits,
+  Partials
+} = require("discord.js");
 
 const messageDelete = require("./events/messageDelete");
 const messageUpdate = require("./events/messageUpdate");
@@ -10,6 +14,11 @@ const guildBanRemove = require("./events/guildBanRemove");
 const guildMemberUpdate = require("./events/guildMemberUpdate");
 const moderationCommands = require("./events/moderationCommands");
 const interactionCreate = require("./events/interactionCreate");
+
+const {
+  sendPanel,
+  handleInteraction
+} = require("./events/verification");
 
 const client = new Client({
   intents: [
@@ -28,7 +37,7 @@ const client = new Client({
   ]
 });
 
-client.once("ready", () => {
+client.once("clientReady", () => {
   console.log("==================================");
   console.log(`${client.user.tag} is online.`);
   console.log("IRAQ SYSTEM is ready.");
@@ -37,8 +46,17 @@ client.once("ready", () => {
 
 client.on("messageDelete", messageDelete);
 client.on("messageUpdate", messageUpdate);
-client.on("messageCreate", moderationCommands);
-client.on("interactionCreate", interactionCreate);
+
+client.on("messageCreate", async message => {
+  await moderationCommands(message);
+  await sendPanel(message);
+});
+
+client.on("interactionCreate", async interaction => {
+  await interactionCreate(interaction);
+  await handleInteraction(interaction);
+});
+
 client.on("voiceStateUpdate", voiceStateUpdate);
 client.on("guildMemberAdd", guildMemberAdd);
 client.on("guildMemberRemove", guildMemberRemove);
