@@ -14,6 +14,7 @@ const guildBanRemove = require("./events/guildBanRemove");
 const guildMemberUpdate = require("./events/guildMemberUpdate");
 const moderationCommands = require("./events/moderationCommands");
 const interactionCreate = require("./events/interactionCreate");
+const decorativeLine = require("./events/decorativeLine");
 
 const {
   sendVerificationPanel,
@@ -53,6 +54,7 @@ client.on("messageCreate", async message => {
   try {
     await moderationCommands(message);
     await sendVerificationPanel(message);
+    await decorativeLine(message);
   } catch (error) {
     console.error("Message event error:", error);
   }
