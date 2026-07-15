@@ -16,8 +16,8 @@ const moderationCommands = require("./events/moderationCommands");
 const interactionCreate = require("./events/interactionCreate");
 
 const {
-  sendPanel,
-  handleInteraction
+  sendVerificationPanel,
+  handleVerificationInteraction
 } = require("./events/verification");
 
 const client = new Client({
@@ -29,6 +29,7 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildVoiceStates
   ],
+
   partials: [
     Partials.Channel,
     Partials.Message,
@@ -45,23 +46,40 @@ client.once("clientReady", () => {
 });
 
 client.on("messageDelete", messageDelete);
+
 client.on("messageUpdate", messageUpdate);
 
 client.on("messageCreate", async message => {
-  await moderationCommands(message);
-  await sendPanel(message);
+  try {
+    await moderationCommands(message);
+    await sendVerificationPanel(message);
+  } catch (error) {
+    console.error("Message event error:", error);
+  }
 });
 
 client.on("interactionCreate", async interaction => {
-  await interactionCreate(interaction);
-  await handleInteraction(interaction);
+  try {
+    await interactionCreate(interaction);
+
+    if (!interaction.replied && !interaction.deferred) {
+      await handleVerificationInteraction(interaction);
+    }
+  } catch (error) {
+    console.error("Interaction event error:", error);
+  }
 });
 
 client.on("voiceStateUpdate", voiceStateUpdate);
+
 client.on("guildMemberAdd", guildMemberAdd);
+
 client.on("guildMemberRemove", guildMemberRemove);
+
 client.on("guildBanAdd", guildBanAdd);
+
 client.on("guildBanRemove", guildBanRemove);
+
 client.on("guildMemberUpdate", guildMemberUpdate);
 
 client.login(process.env.TOKEN);
