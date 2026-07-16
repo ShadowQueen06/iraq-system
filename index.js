@@ -4,6 +4,8 @@ const {
   Partials
 } = require("discord.js");
 
+const mongoose = require("mongoose");
+
 const messageDelete = require("./events/messageDelete");
 const messageUpdate = require("./events/messageUpdate");
 const voiceStateUpdate = require("./events/voiceStateUpdate");
@@ -15,11 +17,20 @@ const guildMemberUpdate = require("./events/guildMemberUpdate");
 const moderationCommands = require("./events/moderationCommands");
 const interactionCreate = require("./events/interactionCreate");
 const decorativeLine = require("./events/decorativeLine");
+const economy = require("./events/economy");
 
 const {
   sendVerificationPanel,
   handleVerificationInteraction
 } = require("./events/verification");
+
+if (!process.env.TOKEN) {
+  throw new Error("TOKEN is missing.");
+}
+
+if (!process.env.MONGO_URI) {
+  throw new Error("MONGO_URI is missing.");
+}
 
 const client = new Client({
   intents: [
@@ -47,7 +58,6 @@ client.once("clientReady", () => {
 });
 
 client.on("messageDelete", messageDelete);
-
 client.on("messageUpdate", messageUpdate);
 
 client.on("messageCreate", async message => {
@@ -55,6 +65,7 @@ client.on("messageCreate", async message => {
     await moderationCommands(message);
     await sendVerificationPanel(message);
     await decorativeLine(message);
+    await economy(message);
   } catch (error) {
     console.error("Message event error:", error);
   }
@@ -73,15 +84,23 @@ client.on("interactionCreate", async interaction => {
 });
 
 client.on("voiceStateUpdate", voiceStateUpdate);
-
 client.on("guildMemberAdd", guildMemberAdd);
-
 client.on("guildMemberRemove", guildMemberRemove);
-
 client.on("guildBanAdd", guildBanAdd);
-
 client.on("guildBanRemove", guildBanRemove);
-
 client.on("guildMemberUpdate", guildMemberUpdate);
 
-client.login(process.env.TOKEN);
+async function startBot() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+
+    console.log("MongoDB connected.");
+
+    await client.login(process.env.TOKEN);
+  } catch (error) {
+    console.error("Bot startup error:", error);
+    process.exit(1);
+  }
+}
+
+startBot();
