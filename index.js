@@ -26,6 +26,11 @@ const {
   handleVerificationInteraction
 } = require("./events/verification");
 
+const {
+  sendShopPanel,
+  handleShopInteraction
+} = require("./events/shop");
+
 if (!process.env.TOKEN) {
   throw new Error("TOKEN is missing.");
 }
@@ -60,7 +65,6 @@ client.once("clientReady", () => {
 });
 
 client.on("messageDelete", messageDelete);
-
 client.on("messageUpdate", messageUpdate);
 
 client.on("messageCreate", async message => {
@@ -70,6 +74,7 @@ client.on("messageCreate", async message => {
     await decorativeLine(message);
     await economy(message);
     await colors.sendPanel(message);
+    await sendShopPanel(message);
   } catch (error) {
     console.error("Message event error:", error);
   }
@@ -82,21 +87,20 @@ client.on("interactionCreate", async interaction => {
     if (!interaction.replied && !interaction.deferred) {
       await handleVerificationInteraction(interaction);
     }
+
+    if (!interaction.replied && !interaction.deferred) {
+      await handleShopInteraction(interaction);
+    }
   } catch (error) {
     console.error("Interaction event error:", error);
   }
 });
 
 client.on("voiceStateUpdate", voiceStateUpdate);
-
 client.on("guildMemberAdd", guildMemberAdd);
-
 client.on("guildMemberRemove", guildMemberRemove);
-
 client.on("guildBanAdd", guildBanAdd);
-
 client.on("guildBanRemove", guildBanRemove);
-
 client.on("guildMemberUpdate", guildMemberUpdate);
 
 async function startBot() {
