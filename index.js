@@ -14,10 +14,12 @@ const guildMemberRemove = require("./events/guildMemberRemove");
 const guildBanAdd = require("./events/guildBanAdd");
 const guildBanRemove = require("./events/guildBanRemove");
 const guildMemberUpdate = require("./events/guildMemberUpdate");
+
 const moderationCommands = require("./events/moderationCommands");
 const interactionCreate = require("./events/interactionCreate");
 const decorativeLine = require("./events/decorativeLine");
 const economy = require("./events/economy");
+const colors = require("./events/colors");
 
 const {
   sendVerificationPanel,
@@ -58,6 +60,7 @@ client.once("clientReady", () => {
 });
 
 client.on("messageDelete", messageDelete);
+
 client.on("messageUpdate", messageUpdate);
 
 client.on("messageCreate", async message => {
@@ -66,6 +69,7 @@ client.on("messageCreate", async message => {
     await sendVerificationPanel(message);
     await decorativeLine(message);
     await economy(message);
+    await colors.sendPanel(message);
   } catch (error) {
     console.error("Message event error:", error);
   }
@@ -84,10 +88,15 @@ client.on("interactionCreate", async interaction => {
 });
 
 client.on("voiceStateUpdate", voiceStateUpdate);
+
 client.on("guildMemberAdd", guildMemberAdd);
+
 client.on("guildMemberRemove", guildMemberRemove);
+
 client.on("guildBanAdd", guildBanAdd);
+
 client.on("guildBanRemove", guildBanRemove);
+
 client.on("guildMemberUpdate", guildMemberUpdate);
 
 async function startBot() {
