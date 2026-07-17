@@ -31,6 +31,17 @@ const {
   handleShopInteraction
 } = require("./events/shop");
 
+const REACTION_CHANNEL_IDS = [
+  "1527475569820827648",
+  "1527478035044110407"
+];
+
+const REACTION_EMOJI_NAMES = [
+  "GI_white",
+  "GI_greystars",
+  "GI_whiteheart"
+];
+
 if (!process.env.TOKEN) {
   throw new Error("TOKEN is missing.");
 }
@@ -69,12 +80,37 @@ client.on("messageUpdate", messageUpdate);
 
 client.on("messageCreate", async message => {
   try {
+    if (!message.guild) return;
+    if (message.author.bot) return;
+
     await moderationCommands(message);
     await sendVerificationPanel(message);
     await decorativeLine(message);
     await economy(message);
     await colors.sendPanel(message);
     await sendShopPanel(message);
+
+    if (REACTION_CHANNEL_IDS.includes(message.channel.id)) {
+      for (const emojiName of REACTION_EMOJI_NAMES) {
+        const emoji = message.guild.emojis.cache.find(
+          serverEmoji => serverEmoji.name === emojiName
+        );
+
+        if (!emoji) {
+          console.error(`Emoji not found: ${emojiName}`);
+          continue;
+        }
+
+        try {
+          await message.react(emoji);
+        } catch (error) {
+          console.error(
+            `Failed to react with ${emojiName}:`,
+            error.message
+          );
+        }
+      }
+    }
   } catch (error) {
     console.error("Message event error:", error);
   }
